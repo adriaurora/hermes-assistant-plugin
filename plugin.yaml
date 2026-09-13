@@ -1,0 +1,14 @@
+name: hermes-assistant
+label: Hermes Assistant
+kind: platform
+version: 0.1.0
+description: Durable Android device inbox and BYO Firebase HTTP v1 delivery for Hermes.
+optional_env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    description: Server-side Firebase service-account JSON path (legacy fallback only)
+    prompt: Firebase service-account JSON path
+    password: true
+  - name: HERMES_ASSISTANT_HOME_CHANNEL
+    description: Cron target value, normally home
+    prompt: Hermes Assistant cron target
+    password: false
