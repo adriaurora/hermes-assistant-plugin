@@ -42,21 +42,46 @@ and the agent enforces a minimum of 16 characters at startup.
 
 This seam is only required for authentication of the plugin HTTP endpoint. It is not required for Hermes Assistant chat or voice.
 
-**Publication status (verified 2026-09-13):** this seam is **not yet published**
-upstream. In [adriaurora/hermes-agent](https://github.com/adriaurora/hermes-agent)
-(public repo, `main` at `1fe8683e5823…`, pushed 2026-09-08) the platform HTTP
-event endpoint already exists — `POST /api/platforms/{platform}/events` handled
-by `_handle_platform_event_callback` with `_check_auth` — but it always
-authenticates through the adapter verifier: no branch (1594 branches scanned)
-contains `http_event_auth_mode` or the `api_server_key` auth mode yet. The seam
-is currently only part of the operator's local deployment (a small, delimited
-delta: ~4 lines in `gateway/platform_registry.py` and ~42 lines in
-`gateway/platforms/api_server.py`). This repository does not vendor or patch
-the agent.
+What requires what:
+
+```text
+Chat / voice / Sessions:
+    plugin NOT required
+    seam  NOT required
+
+Push FCM:
+    plugin required
+    seam  currently required
+```
+
+You do not need the fork (or the seam) to run Hermes Assistant without
+Android push; chat and voice work against unmodified Hermes.
+
+**Publication status (verified 2026-09-14):** the seam is published in the
+[Hermes compatibility repository](https://github.com/adriaurora/hermes-agent):
+
+- Hermes compatibility repository: https://github.com/adriaurora/hermes-agent
+- Required branch: `feature/platform-api-server-key-auth`
+- Required seam commit: `1f517576c1beccc00562af91aa2cf73f1b48bdf7`
+
+The branch sits on top of public upstream commit
+`245e48008fa814b3251f50755eb656bd9fb86cb1` and is **not merged into `main`
+yet**; pin the exact SHA until a tagged release exists:
+
+```bash
+git clone https://github.com/adriaurora/hermes-agent <HERMES_DIR>
+git -C <HERMES_DIR> checkout 1f517576c1beccc00562af91aa2cf73f1b48bdf7
+```
 
 ## Installation
 
-1. Clone this repository to `<PLUGIN_DIR>`.
+1. Clone and pin this repository (until stable tags exist):
+
+   ```bash
+   git clone https://github.com/adriaurora/hermes-assistant-plugin <PLUGIN_DIR>
+   git -C <PLUGIN_DIR> checkout c93c3ce40221773d512fcf7d41222795a5abed98
+   ```
+
 2. Install dependencies:
 
    ```bash
@@ -169,8 +194,9 @@ recognize when a legacy installation re-enrolls with a new FCM token (states
 The test suite runs against a checkout of the Hermes Agent source:
 
 ```bash
-# 1. Obtain a Hermes Agent checkout, then:
-pip install -e '.[test]'
+# 1. Obtain a Hermes Agent checkout pinned to the seam commit:
+git clone https://github.com/adriaurora/hermes-agent /path/to/hermes-agent
+git -C /path/to/hermes-agent checkout 1f517576c1beccc00562af91aa2cf73f1b48bdf7
 HERMES_AGENT_SRC=/path/to/hermes-agent python -m pytest
 ```
 
@@ -179,6 +205,29 @@ All tests are 100% synthetic: fake FCM JSON responses, a test API key
 real credentials are used. Pytest is configured in `pyproject.toml`
 (`[tool.pytest.ini_options]`, `testpaths = ["tests"]`,
 `asyncio_mode = "auto"`).
+
+## Network security (HTTP vs HTTPS)
+
+No Hermes server code change is required for either transport. The gateway
+can be exposed as `http://192.168.x.x:8642` on a LAN or behind TLS at
+`https://hermes.example.com`.
+
+> HTTPS is strongly recommended, especially across untrusted networks.
+>
+> Hermes Assistant may optionally allow a user to connect to an HTTP endpoint
+> after an explicit security warning. In that mode TLS provides no protection:
+> API credentials and application traffic can be intercepted or modified by
+> actors with network access.
+>
+> Plain HTTP should only be used on networks the operator fully controls.
+
+A self-signed or otherwise untrusted certificate is a different problem from
+plain HTTP: solve it with a certificate from a trusted CA, a reverse proxy
+with a valid certificate, or a locally trusted CA — never by disabling
+certificate verification. The Android client decides whether to allow HTTP
+in release; neither the server nor this plugin implement a TLS bypass, and
+nothing here recommends `verify=false`, trusting all certificates, or
+permissive hostname verifiers.
 
 ## Troubleshooting
 
@@ -199,4 +248,4 @@ against the Hermes Agent platform plugin interface (MIT, Nous Research).
 
 ---
 
-Configuration placeholders used in this document: `<API_SERVER_KEY>`, `<FCM_SERVICE_ACCOUNT_JSON>`, `<FIREBASE_PROJECT_ID>`, `<HERMES_HOME>`, `<PLUGIN_DIR>`, `<HERMES_SERVICE_USER>`, `<HOME_CHANNEL_ID>` — replace with your own values. Never commit real credentials.
+Configuration placeholders used in this document: `<API_SERVER_KEY>`, `<FCM_SERVICE_ACCOUNT_JSON>`, `<FIREBASE_PROJECT_ID>`, `<HERMES_DIR>`, `<HERMES_HOME>`, `<PLUGIN_DIR>`, `<HERMES_SERVICE_USER>`, `<HOME_CHANNEL_ID>` — replace with your own values. Never commit real credentials.
