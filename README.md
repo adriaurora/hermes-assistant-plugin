@@ -42,12 +42,13 @@ and the agent enforces a minimum of 16 characters at startup.
 
 This seam is only required for authentication of the plugin HTTP endpoint. It is not required for Hermes Assistant chat or voice.
 
-**Publication status (verified 2026-09-15):** the seam is published in
-[adriaurora/hermes-agent](https://github.com/adriaurora/hermes-agent) branch
-`api-server-enforce-key` at SHA `c45d18265cdb3de00599cf80548dd34187fc750f`
-(the earlier commit `1f517576c1beccc00562af91aa2cf73f1b48bdf7` added the seam:
-~4 lines in `gateway/platform_registry.py` and ~42 lines in
-`gateway/platforms/api_server.py`).
+**Hermes agent**: [adriaurora/hermes-agent](https://github.com/adriaurora/hermes-agent)
+- Branch: `feature/platform-api-server-key-auth`
+- SHA: `1f517576c1beccc00562af91aa2cf73f1b48bdf7`
+
+The seam is optional push RPC only — auth of plugin HTTP endpoint. Chat and
+voice Sessions are independent: they use the Hermes Sessions API directly with
+their own auth schemes and are not affected by plugin seam configuration.
 
 ## Installation
 
