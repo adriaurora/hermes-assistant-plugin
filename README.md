@@ -42,17 +42,12 @@ and the agent enforces a minimum of 16 characters at startup.
 
 This seam is only required for authentication of the plugin HTTP endpoint. It is not required for Hermes Assistant chat or voice.
 
-**Publication status (verified 2026-09-13):** this seam is **not yet published**
-upstream. In [adriaurora/hermes-agent](https://github.com/adriaurora/hermes-agent)
-(public repo, `main` at `1fe8683e5823…`, pushed 2026-09-08) the platform HTTP
-event endpoint already exists — `POST /api/platforms/{platform}/events` handled
-by `_handle_platform_event_callback` with `_check_auth` — but it always
-authenticates through the adapter verifier: no branch (1594 branches scanned)
-contains `http_event_auth_mode` or the `api_server_key` auth mode yet. The seam
-is currently only part of the operator's local deployment (a small, delimited
-delta: ~4 lines in `gateway/platform_registry.py` and ~42 lines in
-`gateway/platforms/api_server.py`). This repository does not vendor or patch
-the agent.
+**Publication status (verified 2026-09-15):** the seam is published in
+[adriaurora/hermes-agent](https://github.com/adriaurora/hermes-agent) branch
+`api-server-enforce-key` at SHA `c45d18265cdb3de00599cf80548dd34187fc750f`
+(the earlier commit `1f517576c1beccc00562af91aa2cf73f1b48bdf7` added the seam:
+~4 lines in `gateway/platform_registry.py` and ~42 lines in
+`gateway/platforms/api_server.py`).
 
 ## Installation
 
